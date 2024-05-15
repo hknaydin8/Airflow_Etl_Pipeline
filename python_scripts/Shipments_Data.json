@@ -1,0 +1,82 @@
+[
+    {
+        "shipment_id": "S123456789",
+        "shipment_date": "2024-04-25",
+        "shipment_status": "Inprogress",
+        "shipment_store": "Gunesli Store",
+        "tracking_number": "TR004325643634",
+        "parcels": [
+            {
+                "parcel_id": "P001",
+                "barcodes": [
+                    "B001",
+                    "B002"
+                ],
+                "package_name": "Koli",
+                "sizes": [
+                    "3",
+                    "4"
+                ]
+            }
+        ],
+        "address": {
+            "street": "Ortanca Sok.",
+            "district": "Sisli",
+            "city": "Istanbul",
+            "country": "Turkiye",
+            "zip_code": "34234"
+        }
+    },
+    {
+        "shipment_id": "S00001245",
+        "shipment_date": "2024-04-01",
+        "shipment_status": "Delivered",
+        "shipment_store": "Kizilay Store",
+        "tracking_number": "TR104325640098",
+        "parcels": [
+            {
+                "parcel_id": "P002",
+                "barcodes": [
+                    "B003"
+                ],
+                "package_name": "Poset",
+                "sizes": [
+                    "2"
+                ]
+            }
+        ],
+        "address": {
+            "street": "Gezinti Cad.",
+            "district": "Bornova",
+            "city": "Izmir",
+            "country": "Turkiye",
+            "zip_code": "35324"
+        }
+    },
+    {
+        "shipment_id": "S00002671",
+        "shipment_date": "2024-04-23",
+        "shipment_status": "Cancelled",
+        "shipment_store": "Maras Store",
+        "tracking_number": "TR104325645108",
+         "parcels": [
+            {
+                "parcel_id": "P003",
+                "barcodes": [
+                    "B004"
+                ],
+                "package_name": "Dosya",
+                "sizes": [
+                    "1"
+                ]
+            }
+        ],
+        "address": {
+            "street": "Kizilay Cad.",
+            "district": "Cankaya",
+            "city": "Ankara",
+            "country": "Turkiye",
+            "zip_code": "061205"
+        }
+    }
+]

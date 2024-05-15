@@ -1,0 +1,113 @@
+version: '3'
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081" #  dışarı açılan port 8081 olarak tanımlandı.
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: admin
+      ME_CONFIG_MONGODB_ADMINPASSWORD: admin
+      ME_CONFIG_MONGODB_SERVER: mongo
+
+  postgresql:
+    container_name: postgres_container
+    image: postgres # Airflow metadasının tutulduğu db'dir.
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-airflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-airflow}
+      POSTGRES_DB: airflow
+      PGDATA: /data/postgres
+    volumes:
+      - postgres-db-volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" #  dışarı açılan port 5432 olarak tanımlandı.
+    restart: always
+
+  pgadmin:
+    container_name: pgadmin_container
+    image: dpage/pgadmin4
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - pgadmin:/var/lib/pgadmin
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    restart: unless-stopped
+
+  webserver:
+    image: apache/airflow:latest
+    command: webserver
+    entrypoint: ['/opt/airflow/script/entrypoint.sh'] # İçeriğinde requirement dosyaları, dbinit, user create ve web server start komutları yer alır
+    depends_on:
+      - postgresql
+    environment:
+      - LOAD_EX=n
+      - EXECUTOR=Sequential
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgresql:5432/airflow
+      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    volumes: # Localde mount edilecek dosya yolları.
+      - ./dags:/opt/airflow/dags
+      - ./airflow-data/includes:/opt/airflow/includes
+      - ./airflow-data/logs:/opt/airflow/logs
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - ./python_scripts:/opt/airflow/python_scripts
+      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./requirements.txt:/opt/airflow/requirements.txt
+    ports:
+      - "8080:8080" #  dışarı açılan port 8080 olarak tanımlandı.
+    healthcheck:
+      test: ['CMD-SHELL', "[ -f /opt/airflow/airflow-webserver.pid ]"]
+      interval: 60s
+      timeout: 60s
+      retries: 10
+
+  scheduler:
+    image: apache/airflow:latest
+    depends_on:
+      - webserver
+    volumes: # Localde mount edilecek dosya yolları.
+      - ./dags:/opt/airflow/dags
+      - ./airflow-data/includes:/opt/airflow/includes
+      - ./airflow-data/logs:/opt/airflow/logs
+      - ./airflow-data/plugins:/opt/airflow/plugins
+      - ./python_scripts:/opt/airflow/python_scripts
+      - ./script/entrypoint.sh:/opt/airflow/script/entrypoint.sh
+      - ./requirements.txt:/opt/airflow/requirements.txt
+    environment: # Connection SQLAlchemy tanımı ve Executor değişkeni yer alır.
+      - LOAD_EX=n
+      - EXECUTOR=Sequential
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgresql:5432/airflow
+      - AIRFLOW_WEBSERVER_SECRET_KEY=this_is_a_very_secured_key
+    command: bash -c "pip install -r ./requirements.txt; airflow db init; airflow scheduler"
+
+
+networks:
+  postgres:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
+  postgres-db-volume:
+  pgadmin:

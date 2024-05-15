@@ -1,0 +1,6 @@
+apache-airflow >= 2.9.0
+SQLAlchemy >= 1.4.36
+psycopg2-binary >= 2.8.6
+#pymongo >= 4.4.0
+pandas >= 1.2.5
+apache-airflow-providers-mongo >= 4.0
