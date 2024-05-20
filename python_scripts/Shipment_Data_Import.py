@@ -1,12 +1,13 @@
 import json
 import os
-import pymongo
+from airflow.providers.mongo.hooks.mongo import MongoHook
 
 data_directory = os.path.dirname(__file__)
 file_path = os.path.join(data_directory, "Shipments_Data.json")
 
 # MongoDB bağlantısı
-client = pymongo.MongoClient("mongodb://mongo:27017/", username="admin", password="admin")
+mongo_hook = MongoHook(conn_id="mongo_default")
+client = mongo_hook.get_conn()
 db = client["MyTestdb"]
 shipment_collection = db["Shipment"]
 

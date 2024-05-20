@@ -1,16 +1,17 @@
 from sqlalchemy import create_engine
 import pandas as pd
-import pymongo
-
+from airflow.providers.mongo.hooks.mongo import MongoHook
 
 # PostgreSQL bağlantısı
 pg_engine = create_engine('postgresql+psycopg2://airflow:airflow@postgresql:5432/postgres')
 
 
 # MongoDB bağlantısı
-client = pymongo.MongoClient("mongodb://mongo:27017/", username="admin", password="admin")
+mongo_hook = MongoHook(conn_id="mongo_default")
+client = mongo_hook.get_conn()
 db = client["MyTestdb"]
 shipment_collection = db["Shipment"]
+
 
 
 # MongoDB'den verileri al
